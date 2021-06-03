@@ -6,39 +6,56 @@ class Post {
         this.publishedAt = publishedAt;
         this.author = author;
         this.url = url;
-        this.category;
+        this.category = category;
+    }
+}
+
+class Group {
+    constructor(title, posts) {
+        this.title = title;
+        this.posts = posts;
     }
 }
 
 const api = `https://newsapi.org/v2/top-headlines?country=us&apiKey=e6ef2cde327f46e3820d0344025b79fc&category=`;
 // const api = `https://newsapi.org/v2/top-headlines?country=us&apiKey=8b869ec3eec745c99e0442c5abf60ccf&category=`;
 let categories = ['business','entertainment','general','health','science','sports','technology'];
-let posts = [];
 
-categories.forEach(category => {
-    fetch(api + category).then(response => {
+let groups = [];
+
+for (let i = 0; i < categories.length; i++) {
+
+    let posts = [];
+
+    fetch(api + categories[i]).then(response => {
         response.json().then(e => {
-            let articles = e.articles;
-            for (let item in articles) {
-                posts.push(new Post(articles[item].title, articles[item].description, articles[item].urlToImage, articles[item].publishedAt, articles[item].author, articles[item].url, category));
+            for (let a of e.articles) {
+                posts.push(new Post(
+                    a.title,
+                    a.description,
+                    a.urlToImage ?? 'https://i.stack.imgur.com/y9DpT.jpg',
+                    a.publishedAt,
+                    a.author,
+                    a.url,
+                    categories[i]
+                ));
+            }
+
+            groups.push(new Group(categories[i], posts));
+
+            if (i === categories.length - 1) {
+                App.root.groups = groups;
+                console.log(groups);
             }
         });
     });
+}
+
+let App = new Easy({
+    groups: null
 });
 
-console.log(posts);
-
-let app = new Easy({
-    data: {
-        data: "Hle",
-        posts: null
-    },
-    methods: {
-
-    }
-});
-
-setTimeout(() => {
-    app.root.data.posts = posts;
-    app.boot();
-}, 500);
+follow(() => {
+    App.root.groups;
+    App.boot();
+})
