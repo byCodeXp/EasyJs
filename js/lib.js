@@ -47,54 +47,70 @@ function reactive(obj) {
 }
 
 class Easy {
-    boot() {
-        let app = $("#app");
+    cycles(elementDOM) {
+        // find all cycles
+        let allCycles = elementDOM.querySelectorAll("for");
+        if (!allCycles) return;
 
-        if (!app) {
-            return;
-        }
+        // iteration cycles
+        for(let cycle of allCycles) {
+            // value in attribute of cycle <for in="value">
 
-        // find and replace cycles
+            let attribute = cycle.getAttribute('in');
+            let newDOM = cycle.innerHTML;
+            let generatedContent = "";
 
-        let allFor = app.querySelectorAll("for");
+            // check if data has current filed
+            if (!this.root.hasOwnProperty(attribute)) continue;
+            let data = this.root[attribute];
 
-        if (!allFor) {
-            return;
-        }
+            // check if not null
+            if (!data) continue;
+            // check if iterable
+            if (typeof (data) != "object") continue;
 
-        for (let oneFor of allFor) {
-            let forIn = oneFor.getAttribute('in');
-            let child = oneFor.innerHTML;
-            let text = "";
+            // iteration by items of data
+            for (let obj in data) {
+                // make new instance of content
 
-            if (!this.root.hasOwnProperty(forIn))
-                continue;
-
-            if (!this.root[forIn])
-                continue;
-
-            if (typeof(this.root[forIn]) != "object")
-                continue;
-
-            this.root[forIn].forEach(e => {
-                let el = child;
-                if (typeof(e) === "object")
-                {
-                    el = el.replace("@this", e);
-                    for(let p in e) {
-                        el = el.replace("@:" + p, e[p] ?? '');
+                // check object, maybe array, or value
+                if (typeof(data[obj]) === "object") {
+                    // iteration by properties of object
+                    for (let prop in data[obj]) {
+                        newDOM = newDOM.replaceAll(`@:${prop}`, data[obj][prop]);
                     }
                 }
-                else
-                {
-                    el = el.replace("@this", e);
-                }
-                text += el;
-            })
 
-            oneFor.innerHTML = "";
-            oneFor.outerHTML = text;
+                // find @this in html: can be used in simple array
+
+                newDOM = newDOM.replaceAll("@this", data[obj]);
+
+                // add item to other elements
+
+                generatedContent += newDOM;
+            }
+
+            // change for tags on generated content
+            cycle.innerHTML = "";
+            cycle.outerHTML = generatedContent;
         }
+    }
+    cyclesVirtual(virtualDOM) {
+        return virtualDOM;
+    }
+    boot() {
+        let app = $("#app");
+        
+        if (!app)  {
+            console.warn("#app not found");
+            return;
+        }
+
+        console.log(
+            this.cyclesVirtual(demount(app))
+        )
+
+        // this.cycles(app);
 
         // find and replace variables
 
