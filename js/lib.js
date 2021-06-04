@@ -47,72 +47,149 @@ function reactive(obj) {
 }
 
 class Easy {
-    cycles(elementDOM) {
+    cycles(elementDOM, parameter = null) {
         // find all cycles
         let allCycles = elementDOM.querySelectorAll("for");
-        if (!allCycles) return;
+        if (!allCycles) {
+            console.warn("allCycles is null");
+            return;
+        }
+
+        let it = 0;
 
         // iteration cycles
         for(let cycle of allCycles) {
             // value in attribute of cycle <for in="value">
 
             let attribute = cycle.getAttribute('in');
-            let newDOM = cycle.innerHTML;
             let generatedContent = "";
 
+            let data;
+
             // check if data has current filed
-            if (!this.root.hasOwnProperty(attribute)) continue;
-            let data = this.root[attribute];
+            if (parameter) {
+                if (!this.root[parameter][it].hasOwnProperty(attribute)) {
+                    console.warn("this.root[data] not found");
+                    continue;
+                }
+                data = this.root[parameter][it][attribute];
+            }
+            else
+            {
+                if (!this.root.hasOwnProperty(attribute)) {
+                    console.warn("this.root[data] not found");
+                    continue;
+                }
+                data = this.root[attribute];
+            }
+
+            it++;
 
             // check if not null
-            if (!data) continue;
+            if (!data) {
+                console.warn("data is null");
+                continue;
+            }
             // check if iterable
-            if (typeof (data) != "object") continue;
+            if (typeof (data) != "object") {
+                console.warn("data is not type object")
+                continue;
+            }
 
             // iteration by items of data
             for (let obj in data) {
                 // make new instance of content
 
+                let newDOM = cycle.innerHTML;
+
                 // check object, maybe array, or value
                 if (typeof(data[obj]) === "object") {
                     // iteration by properties of object
                     for (let prop in data[obj]) {
+                        let text = newDOM.match(/<for[^`]*for>/gm);
+                        newDOM = newDOM.replace(/<for[^`]*for>/gm, '@for');
                         newDOM = newDOM.replaceAll(`@:${prop}`, data[obj][prop]);
+                        newDOM = newDOM.replace('@for', text);
                     }
                 }
 
                 // find @this in html: can be used in simple array
 
-                newDOM = newDOM.replaceAll("@this", data[obj]);
+                // newDOM = newDOM.replaceAll("@this", data[obj]);
+
+                // console.log(newDOM)
 
                 // add item to other elements
-
                 generatedContent += newDOM;
             }
 
             // change for tags on generated content
             cycle.innerHTML = "";
-            cycle.outerHTML = generatedContent;
+            cycle.innerHTML = generatedContent;
+
+            this.cycles(cycle, attribute);
+
+            cycle.outerHTML = cycle.innerHTML;
         }
     }
+    replace(node, find, change) {
+        console.log(node)
+        if (typeof (node.children) === "string") {
+            let text = node.children;
+            text = text.replace(find, change)
+            node.children = text;
+            return node;
+        }
+        // else
+        // {
+        //     for (let child of node.children) {
+        //         this.replace(child);
+        //     }
+        // }
+    }
     cyclesVirtual(virtualDOM) {
+        for (let child of virtualDOM.children) {
+            if (child.tagName === "FOR") {
+                let attribute = child.props['in'];
+                if (!attribute) continue;
+
+                if (!this.root.hasOwnProperty(attribute)) continue;
+                let data = this.root[attribute];
+
+                // check if not null
+                if (!data) continue;
+                // check if iterable
+                if (typeof (data) != "object") continue;
+                // iteration by items of data
+
+                for (let obj in data) {
+                    // check object, maybe array, or value
+                    if (typeof(data[obj]) === "object") {
+
+                        // iteration by properties of object
+                        for (let prop in data[obj]) {
+                            // child = this.replace(child, `@:${prop}`, data[obj][prop]);
+                        }
+                    }
+                }
+            }
+        }
+
         return virtualDOM;
     }
     boot() {
         let app = $("#app");
-        
+
         if (!app)  {
             console.warn("#app not found");
             return;
         }
 
-        console.log(
-            this.cyclesVirtual(demount(app))
-        )
+        // let result = this.cyclesVirtual(demount(app));
 
-        // this.cycles(app);
+        // console.log(result)
 
-        // find and replace variables
+        this.cycles(app);
 
         let dom = app.innerHTML;
 

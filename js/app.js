@@ -22,49 +22,51 @@ class Group {
 let categories = ['business','entertainment','general','health','science','sports','technology'];
 
 let groups = [];
-let posts = [];
-
-posts.push(new Post('2'))
-posts.push(new Post('3'))
-posts.push(new Post('2'))
-
-groups.push(new Group('Group B', posts));
-groups.push(new Group('321', posts));
-
-// for (let i = 0; i < categories.length; i++) {
 //
-//     let posts = [];
+// let posts = [];
 //
-//     fetch(api + categories[i]).then(response => {
-//         response.json().then(e => {
-//             for (let a of e.articles) {
-//                 posts.push(new Post(
-//                     a.title,
-//                     a.description,
-//                     a.urlToImage ?? 'https://i.stack.imgur.com/y9DpT.jpg',
-//                     a.publishedAt,
-//                     a.author,
-//                     a.url,
-//                     categories[i]
-//                 ));
-//             }
+// posts.push(new Post('Heleo'))
+// posts.push(new Post('Unique'))
+// posts.push(new Post('test'))
 //
-//             groups.push(new Group(categories[i], posts));
-//
-//             if (i === categories.length - 1) {
-//                 App.root.groups = groups;
-//             }
-//         });
-//     });
-// }
+// groups.push(new Group('Group B', posts));
+// groups.push(new Group('321', posts));
 
-// console.log(groups);
+
+for (let i = 0; i < categories.length; i++) {
+
+    let posts = [];
+
+    fetch(api + categories[i]).then(response => {
+        response.json().then(e => {
+            for (let a of e.articles) {
+                posts.push(new Post(
+                    a.title,
+                    a.description,
+                    a.urlToImage ?? 'https://i.stack.imgur.com/y9DpT.jpg',
+                    a.publishedAt,
+                    a.author,
+                    a.url,
+                    categories[i]
+                ));
+            }
+
+            groups.push(new Group(categories[i], posts));
+
+            if (i === categories.length - 1) {
+                App.root.groups = groups;
+            }
+        });
+    });
+}
+
+console.log(groups);
 
 let App = new Easy({
-    groups: groups
+    groups: null
 });
 
 follow(() => {
     App.root.groups;
     App.boot();
-})
+});

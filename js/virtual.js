@@ -7,7 +7,13 @@ const eNode = (tagName, props = {}, children = []) => {
 };
 
 function virtual(node) {
-    let elements = [];
+    let nodeElements = [];
+    let elements = node.querySelectorAll("*");
+
+    if (elements.length === 0) {
+        return node.innerHTML;
+    }
+
     for (let element of node.querySelectorAll("*")) {
         if (element.parentNode === node) {
             let newNode = eNode(element.tagName);
@@ -15,10 +21,10 @@ function virtual(node) {
                 newNode.props[p.name] = p.value;
             }
             newNode.children = virtual(element);
-            elements.push(newNode)
+            nodeElements.push(newNode);
         }
     }
-    return elements;
+    return nodeElements;
 }
 
 function demount(node) {
