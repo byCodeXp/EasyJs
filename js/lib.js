@@ -112,12 +112,15 @@ class Easy {
                         newDOM = newDOM.replace('@for', text);
                     }
                 }
+                else
+                {
+                    let text = newDOM.match(/<for[^`]*for>/gm);
+                    newDOM = newDOM.replace(/<for[^`]*for>/gm, '@for');
+                    newDOM = newDOM.replaceAll("@this", data[obj]);
+                    newDOM = newDOM.replace('@for', text);
+                }
 
                 // find @this in html: can be used in simple array
-
-                // newDOM = newDOM.replaceAll("@this", data[obj]);
-
-                // console.log(newDOM)
 
                 // add item to other elements
                 generatedContent += newDOM;
