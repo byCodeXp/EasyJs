@@ -125,8 +125,6 @@ function follow(delegate) {
     action = null;
 }
 
-
-
 class Easy {
     constructor(data= {}) {
         // Get root dom element
@@ -151,10 +149,6 @@ class Easy {
             this.watch();
         });
 
-        // Just for test
-        setInterval(() => {
-            this.data.title = Math.random()
-        }, 1000)
     }
     watch() {
         log('Star watching dom\n{');
