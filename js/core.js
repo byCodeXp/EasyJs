@@ -58,6 +58,9 @@ function demount(domElement) {
     if (!newNode.children.length > 0) {
         newNode.children.push(domElement.innerText);
     }
+
+    newNode.$ref = domElement;
+
     return newNode;
 }
 
@@ -143,6 +146,10 @@ class Easy {
         // Create virtual dom
         this.virtualDOM = demount(this.root);
 
+        this.root.innerHTML = "";
+
+        this.mount(this.virtualDOM, this.root);
+
         log('Created instance app with data:');
         log(this.data, 'table');
 
@@ -157,50 +164,64 @@ class Easy {
     watch() {
         log('Star watching dom\n{');
 
-        this.root.innerHTML = this.mount(this.virtualDOM).innerHTML;
+        let clone = Object.assign({}, this.virtualDOM);
+
+        this.parser(clone)
 
         log('}\nEnd watching');
     }
-    compare() {
-
+    unmount(node) {
+        this.virtualDOM.$ref.parentNode.removeChild(node.$ref);
     }
-    mount(node) {
+    mount(node, container) {
         const { tagName, props, children } = node;
 
         const newElement = document.createElement(tagName);
-
-        if (tagName === 'INPUT') {
-            if (props.hasOwnProperty('bind')) {
-                if (this.data.hasOwnProperty(props.bind))
-                newElement.setAttribute('value', this.data[props.bind]);
-            }
-        }
 
         for (const att in props) {
             newElement.setAttribute(att, props[att]);
         }
 
-        for (const child of children) {
-            if (!child) {
-                continue;
-            }
-            if (typeof child === "string") {
-                // Parse reactive fields
-                if (child.indexOf('@->') === 0) {
-                    const prop = child.replace('@->', '');
-                    if (this.data.hasOwnProperty(prop)) {
-                        newElement.innerText = this.data[prop];
-                    }
-                }
-                else {
+        if (children) {
+            for (const child of children) {
+                if (typeof child === "string") {
                     newElement.innerText = child;
                 }
-                continue;
+                else {
+                    this.mount(child, newElement);
+                }
             }
-            newElement.appendChild( this.mount(child) );
         }
 
-        return newElement;
+        container.appendChild(newElement);
+
+        node.$ref = newElement;
+    }
+    parser(node) {
+        let { tagName, props, children } = node;
+
+        for (let child in children) {
+            if (!children[child]) continue;
+            // Parse variables
+            if (typeof children[child] === "string") {
+                if (children[child].indexOf('@->') === 0) {
+                    const prop = children[child].replace('@->', '');
+                    if (this.data.hasOwnProperty(prop)) {
+                        node.$ref.innerText = this.data[prop];
+                    }
+                }
+                continue;
+            }
+            // Inputs
+            if (children[child].tagName === 'INPUT') {
+                if (children[child].props.hasOwnProperty('bind')) {
+                    if (this.data.hasOwnProperty(children[child].props.bind)) {
+                        children[child].$ref.setAttribute('value', this.data[children[child].props.bind]);
+                    }
+                }
+            }
+            this.parser(children[child]);
+        }
     }
 }
 
