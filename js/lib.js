@@ -42,7 +42,6 @@ function reactive(obj) {
             }
         });
     });
-
     return obj;
 }
 

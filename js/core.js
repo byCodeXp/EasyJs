@@ -1,7 +1,7 @@
 const debug = true;
 
 // query selector
-function $ (query) {
+function _ (query) {
     if (!query) return null;
     if (query.includes('#')) {
         return document.querySelector(query);
@@ -85,25 +85,76 @@ function demount(domElement) {
 //     return newElement;
 // }
 
+class Dep {
+    constructor() {
+        this.subscribers = new Set();
+    }
+
+    depend() {
+        if (action) this.subscribers.add(action);
+    }
+
+    notify() {
+        this.subscribers.forEach((subscriber) => subscriber());
+    }
+}
+
+function $(data) {
+    Object.keys(data).forEach((key) => {
+        const dep = new Dep();
+        let value = data[key];
+        Object.defineProperty(data, key, {
+            get() {
+                dep.depend();
+                return value;
+            },
+            set(newValue) {
+                value = newValue;
+                dep.notify();
+            }
+        });
+    });
+    return data;
+}
+
+let action = null;
+
+function follow(delegate) {
+    action = delegate;
+    delegate();
+    action = null;
+}
+
+
+
 class Easy {
     constructor(data= {}) {
-        // root dom element
-        this.root = $('#app');
+        // Get root dom element
+        this.root = _('#app');
         if (!this.root) {
             log('#App is not found:\n (create div with id="app")', 'warn')
         }
 
-        this.data = data;
+        // Init with data
+        this.data = $(data);
+
+        // Create virtual dom
         this.virtualDOM = demount(this.root);
 
         log('Created instance app with data:');
         log(this.data, 'table');
 
-        setTimeout(() => {
-            this.data.title = Math.random()
-            this.watch();
-        }, 1000)
         this.watch();
+
+        follow(() => {
+            this.data;
+            this.watch();
+        });
+
+        // Just for test
+        setInterval(() => {
+            this.data.title = Math.random()
+        }, 1000)
     }
     watch() {
         log('Star watching dom\n{');
