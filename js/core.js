@@ -1,7 +1,11 @@
 const debug = true;
 
-// query selector
-function _ (query) {
+
+/**
+ * @param query {string}
+ * @return {NodeListOf<*>|null|*}
+ */
+function $$(query) {
     if (!query) return null;
     if (query.includes('#')) {
         return document.querySelector(query);
@@ -128,7 +132,7 @@ function follow(delegate) {
 class Easy {
     constructor(data= {}) {
         // Get root dom element
-        this.root = _('#app');
+        this.root = $$('#app');
         if (!this.root) {
             log('#App is not found:\n (create div with id="app")', 'warn')
         }
@@ -157,10 +161,20 @@ class Easy {
 
         log('}\nEnd watching');
     }
+    compare() {
+
+    }
     mount(node) {
         const { tagName, props, children } = node;
 
         const newElement = document.createElement(tagName);
+
+        if (tagName === 'INPUT') {
+            if (props.hasOwnProperty('bind')) {
+                if (this.data.hasOwnProperty(props.bind))
+                newElement.setAttribute('value', this.data[props.bind]);
+            }
+        }
 
         for (const att in props) {
             newElement.setAttribute(att, props[att]);
@@ -171,6 +185,7 @@ class Easy {
                 continue;
             }
             if (typeof child === "string") {
+                // Parse reactive fields
                 if (child.indexOf('@->') === 0) {
                     const prop = child.replace('@->', '');
                     if (this.data.hasOwnProperty(prop)) {
@@ -188,3 +203,10 @@ class Easy {
         return newElement;
     }
 }
+
+document.addEventListener('keyup', function() {
+    const e = event.target;
+    if (e.attributes.hasOwnProperty('bind')) {
+        App.data[e.attributes.bind.value] = e.value;
+    }
+});
