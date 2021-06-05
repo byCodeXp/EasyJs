@@ -145,10 +145,12 @@ class Easy {
 
         // Create virtual dom
         this.virtualDOM = demount(this.root);
+        //
+        // this.root.innerHTML = "";
+        //
+        // this.mount(this.virtualDOM, this.root);
 
-        this.root.innerHTML = "";
-
-        this.mount(this.virtualDOM, this.root);
+        console.log(this.virtualDOM);
 
         log('Created instance app with data:');
         log(this.data, 'table');
@@ -172,6 +174,38 @@ class Easy {
     }
     unmount(node) {
         this.virtualDOM.$ref.parentNode.removeChild(node.$ref);
+    }
+    mountReturn(node) {
+        const { tagName, props, children } = node;
+
+        const newElement = document.createElement(tagName);
+
+        for (const att in props) {
+            newElement.setAttribute(att, props[att]);
+        }
+
+        for (const child of children) {
+            if (!child) {
+                continue;
+            }
+            if (typeof child === "string") {
+                if (child.indexOf('@->') === 0) {
+                    const prop = child.replace('@->', '');
+                    if (this.data.hasOwnProperty(prop)) {
+                        newElement.innerText = this.data[prop];
+                    }
+                }
+                else {
+                    newElement.innerText = child;
+                }
+                continue;
+            }
+            newElement.appendChild( this.mountReturn(child) );
+        }
+
+        node.$ref = newElement;
+
+        return newElement;
     }
     mount(node, container) {
         const { tagName, props, children } = node;
@@ -201,11 +235,12 @@ class Easy {
         let { tagName, props, children } = node;
 
         for (let child in children) {
-            if (!children[child]) continue;
+            let ch = children[child];
+            if (!ch) continue;
             // Parse variables
-            if (typeof children[child] === "string") {
-                if (children[child].indexOf('@->') === 0) {
-                    const prop = children[child].replace('@->', '');
+            if (typeof ch === "string") {
+                if (ch.indexOf('@->') === 0) {
+                    const prop = ch.replace('@->', '');
                     if (this.data.hasOwnProperty(prop)) {
                         node.$ref.innerText = this.data[prop];
                     }
@@ -213,14 +248,38 @@ class Easy {
                 continue;
             }
             // Inputs
-            if (children[child].tagName === 'INPUT') {
-                if (children[child].props.hasOwnProperty('bind')) {
-                    if (this.data.hasOwnProperty(children[child].props.bind)) {
-                        children[child].$ref.setAttribute('value', this.data[children[child].props.bind]);
+            if (ch.tagName === 'INPUT') {
+                if (ch.props.hasOwnProperty('bind')) {
+                    if (this.data.hasOwnProperty(ch.props.bind)) {
+                        ch.$ref.setAttribute('value', this.data[ch.props.bind]);
                     }
                 }
             }
-            this.parser(children[child]);
+            // Cycles
+            if (ch.tagName === 'FOR') {
+                if (ch.props.hasOwnProperty('in')) {
+                    if (this.data.hasOwnProperty(ch.props.in)) {
+                        let text = "";
+                        for (let obj of this.data[ch.props.in]) {
+                            if (typeof obj === "object") {
+                                let inner = ch.$ref.innerHTML;
+                                for (let prop in obj) {
+                                    if (ch.$ref.innerText.includes(prop)) {
+                                        inner = inner.replace(`@-&gt;${prop}`, obj[prop]);
+                                    }
+                                }
+                                text += inner;
+                            }
+                            else {
+                                text += ch.$ref.innerHTML.replaceAll('@this', obj);
+                            }
+                        }
+                        ch.$ref.outerHTML = text;
+                    }
+                }
+            }
+            
+            this.parser(ch);
         }
     }
 }
