@@ -23,9 +23,9 @@
     </style>
 </head>
 <body>
-<div id="app">
+<div>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Eighth navbar example">
+        <nav class="navbar navbar-expand navbar-dark bg-dark" aria-label="Eighth navbar example">
             <div class="container">
                 <a class="navbar-brand" href="#">Container</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07" aria-controls="navbarsExample07" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,17 +53,17 @@
                         </li>
                     </ul>
                     <form>
-                        <input class="form-control" type="text" placeholder="Search" aria-label="Search">
+                        <input id="textValue" class="form-control" type="text" placeholder="@!$!@">
                     </form>
                 </div>
             </div>
         </nav>
     </header>
-    <main>
+    <main id="app">
         <section class="py-5 text-center container">
             <div class="row py-lg-5">
                 <div class="col-lg-6 col-md-8 mx-auto">
-                    <h1 class="fw-light">Album example</h1>
+                    <h1 class="fw-light">News example</h1>
                     <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don’t simply skip over it entirely.</p>
                     <p>
                         <for in="countries">
@@ -86,13 +86,14 @@
                                     <img src="@:urlToImage" class="card-img-top" alt="...">
                                     <div class="card-body">
                                         <h5 class="card-title">@:title</h5>
-                                        <p class="card-text">@:title</p>
+                                        <p class="card-text">@:description</p>
                                     </div>
                                     <ul class="list-group list-group-flush">
                                         <li class="list-group-item">@:author</li>
                                     </ul>
-                                    <div class="card-body">
-                                        <p class="card-text"><small class="text-muted">@:publishedAt</small></p>
+                                    <div class="card-body row">
+                                        <p class="card-text col"><small class="text-muted">@:publishedAt</small></p>
+                                        <a target="_blank" href="@:url" class="btn btn-link col">Source Link</a>
                                     </div>
                                 </div>
                             </div>
@@ -113,7 +114,6 @@
         </div>
     </footer>
 </div>
-
 <script src="js/virtual.js"></script>
 <script src="js/lib.js"></script>
 <script src="js/app.js"></script>

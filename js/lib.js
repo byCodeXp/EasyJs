@@ -188,11 +188,27 @@ class Easy {
             return;
         }
 
-        // let result = this.cyclesVirtual(demount(app));
-
-        // console.log(result)
-
         this.cycles(app);
+
+        // binding
+        //
+        // let inputs = app.querySelectorAll('input');
+        //
+        // for(let input of inputs) {
+        //     if (input.hasAttribute('bind')) {
+        //         let bind = input.getAttribute('bind');
+        //         console.log(bind);
+        //         if (this.root.hasOwnProperty(bind)) {
+        //             console.warn(this.root[bind]);
+        //
+        //         }
+        //         input.addEventListener('keyup', function() {
+        //             this.root
+        //         });
+        //     }
+        // }
+
+        //
 
         let dom = app.innerHTML;
 
