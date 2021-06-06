@@ -248,70 +248,6 @@ class Easy {
                     }
                 }
             }
-            // Cycles
-            // if (ch.tagName === 'FOR') {
-            //     if (ch.props.hasOwnProperty('in')) {
-            //         if (this.data.hasOwnProperty(ch.props.in)) {
-            //             let text = "";
-            //             for (let obj of this.data[ch.props.in]) {
-            //                 if (typeof obj === "object") {
-            //                     let inner = ch.$ref.innerHTML;
-            //                     for (let prop in obj) {
-            //                         if (ch.$ref.innerText.includes(prop)) {
-            //                             inner = inner.replace(`@-&gt;${prop}`, obj[prop]);
-            //                         }
-            //                     }
-            //                     text += inner;
-            //                 }
-            //                 else
-            //                 {
-            //                     text += ch.$ref.innerHTML.replaceAll('@this', obj);
-            //                 }
-            //             }
-            //             ch.$ref.outerHTML = text;
-            //         }
-            //     }
-            // }
-
-            // if(ch.tagName === 'FOR') {
-            //     // For has attribute "in"
-            //     if (ch.props.hasOwnProperty('in')) {
-            //         // Data has filed form attribute "in"
-            //         if (this.data.hasOwnProperty(ch.props.in)) {
-            //             for(let c in ch.children) {
-            //                 console.log(ch.children[c]);
-            //             }
-            //         }
-            //     }
-            // }
-
-            // ch.tagName === 'FOR' && this.parseCycle(ch) || this.parser(ch);
-
-            // if (ch.tagName === 'FOR') {
-            //     // For has attribute "in"
-            //     if (ch.props.hasOwnProperty('in')) {
-            //         // Data has field form attribute "in"
-            //         if (this.data.hasOwnProperty(ch.props.in)) {
-            //             ch.$ref.innerHTML = "";
-            //             for (let c of ch.children) {
-            //                 ch.$ref.appendChild(
-            //                     this.mountReturn(c)
-            //                 );
-            //             }
-            //             let template = ch.$ref.innerHTML;
-            //             let generatedContent = "";
-            //             for (let prop in this.data[ch.props.in]) {
-            //                 generatedContent += template;
-            //             }
-            //             ch.$ref.innerHTML = generatedContent;
-            //
-            //             this.parseCycle(ch.$ref, ch.props.in);
-            //         }
-            //     }
-            // }
-            // else {
-            //     this.parser(ch);
-            // }
 
             if (ch.tagName === 'FOR') {
                 console.log('----------------------------------------------------');
@@ -349,9 +285,6 @@ class Easy {
             this.parser(ch);
         }
     }
-    replace(element) {
-
-    }
     futureCyclesParser(cycleElement, parameter) {
         for (let child of cycleElement.children) {
             if (child.tagName === 'FOR') {
@@ -374,7 +307,6 @@ class Easy {
                                         elementContent = elementContent.replaceAll(`@->${pp}`, this.data[parameter][object][child.getAttribute('in')][prop][pp]);
                                     }
                                 }
-
                                 generatedContent += elementContent;
                             }
                         }
@@ -385,50 +317,6 @@ class Easy {
             }
             this.futureCyclesParser(child, parameter);
         }
-        // console.log(`Parameter: ${parameter}`);
-    }
-    parseCycle(cycle, parameter) {
-        for (let child of cycle.children) {
-            if (child.tagName === 'FOR') {
-                if (child.attributes.hasOwnProperty('in')) {
-                    if (this.data.hasOwnProperty(parameter)) {
-                        if (this.data[parameter][0].hasOwnProperty(child.getAttribute('in'))) { /// Need fix this.data[parameter][0] - 0 change on iteration send in parameter
-                            let template = child.innerHTML;
-                            let generatedContent = "";
-                            for (let obj in this.data[parameter][0]) {
-                                generatedContent += template;
-                            }
-                            child.innerHTML = generatedContent;
-                            console.log(child);
-                        }
-                    }
-                }
-            }
-            this.parseCycle(child, parameter);
-            if (child.tagName === 'FOR') {
-                child.outerHTML = child.innerHTML;
-            }
-        }
-    }
-
-
-    cycles(cycleNode) {
-        const { tagName, props, children } = cycleNode;
-        // For has attribute "in"
-        if (props.hasOwnProperty('in')) {
-            // Data has field form attribute "in"
-            if (this.data.hasOwnProperty(props.in)) {
-                // Create template from "for" content
-                let template = cycleNode.$ref.innerHTML;
-                let generatedContent = '';
-                for (let prop of this.data[props.in]) {
-                    generatedContent += template;
-                }
-                cycleNode.$ref.outerHTML = generatedContent;
-            }
-        }
-
-
     }
 }
 
