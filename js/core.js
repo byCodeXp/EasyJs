@@ -97,8 +97,7 @@ function follow(delegate) {
 }
 
 class Easy {
-    constructor(data= {}) {
-
+    constructor(data= {}, preload) {
         // Get root dom element
         this.root = $$('#app');
 
@@ -106,6 +105,7 @@ class Easy {
 
         // Init with data
         this.data = $(data);
+        this.preload = preload;
 
         // Create virtual dom
         this.virtualDOM = demount(this.root);
@@ -119,7 +119,7 @@ class Easy {
         log('Created instance app with data:');
         log(this.data, 'table');
 
-        this.it = 0; ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        this.it = 0; //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         this.watch();
 
@@ -299,6 +299,7 @@ class Easy {
                 for (let element in data[this.it][pointer]) {
                     let text = template;
                     for (let field in data[this.it][pointer][element]) {
+                        text = text.replaceAll(`@->${field}`, data[this.it][pointer][element][field]);
                         text = text.replaceAll(`@-&gt;${field}`, data[this.it][pointer][element][field]);
                     }
                     generatedContent += text;
@@ -311,6 +312,7 @@ class Easy {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    App.preload();
     document.addEventListener('keyup', function() {
         const e = event.target;
         if ('bind' in e.attributes) {

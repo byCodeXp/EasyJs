@@ -54,21 +54,21 @@
         </section>
         <div class="album py-5 bg-light">
             <div class="container">
-                <for in="foods">
-                    <h2 id="@->category" class="mt-4">@->category</h2>
+                <for in="groupsFiltered">
+                    <h2 class="mt-4">@->title</h2>
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-                        <for in="list">
+                        <for in="posts">
                             <div class="col">
                                 <div class="card shadow-sm overflow-hidden">
-                                    <img src="@->preview" alt="">
+                                    <img src="@->urlToImage" alt="">
                                     <div class="card-body">
-                                        <p class="card-text">@->name</p>
+                                        <p class="card-text">@->title</p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
                                             </div>
-                                            <small class="text-muted">@->price</small>
+                                            <small class="text-muted">@->publishedAt</small>
                                         </div>
                                     </div>
                                 </div>
@@ -93,83 +93,63 @@
 <script>
     const App = new Easy({
         title: 'EasyJs',
-        searchQuery: 'blah blah',
-        array: ['article', 'post', 'block'],
-        set: [
-            {
-                title: 'Orange',
-                time: '3 mins'
-            },
-            {
-                title: "Apple",
-                time: "21 mins"
-            },
-            {
-                title: "Banana",
-                time: "9 mins"
-            }
-        ],
-        foods: function () {
-            const data = [
-                {
-                    category: "fruits",
-                    list: [
-                        {
-                            name: "🍊 Orange",
-                            price: '$6',
-                            preview: 'https://www.abc.net.au/news/image/10032956-3x2-940x627.jpg'
-                        }
-                    ]
-                },
-                {
-                    category: "drinks",
-                    list: [
-                        {
-                            name: "🍵 Tea",
-                            price: '$10',
-                            preview: 'https://ipolitics.ca/wp-content/uploads/2021/04/tea-scaled.jpg'
-                        },
-                        {
-                            name: "☕ Coffee",
-                            price: '$20',
-                            preview: ''
-                        },
-                        {
-                            name: "🍹 Tropical drink",
-                            price: '$32',
-                            preview: ''
-                        }
-                    ]
-                },
-                {
-                    category: "fast foods",
-                    list: [
-                        {
-                            name: "🍕 Pizza",
-                            price: '$22'
-                        },
-                        {
-                            name: "🍟 Fries",
-                            price: '$15',
-                            preview: 'https://static.toiimg.com/thumb/54659021.cms?width=1200&height=900'
-                        },
-                    ]
-                },
-            ];
-
-            let newData = [];
-
-            data.forEach(e => {
-                for (let obj of e.list) {
-                    if (obj.name.toLowerCase().includes(this.searchQuery.toLowerCase())) {
-                        e.list = e.list.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-                        newData = [...newData, e];
+        searchQuery: '',
+        groups: [],
+        groupsFiltered: function () {
+            let data = [];
+            this.groups.forEach(el => {
+                let e = Object.assign({}, el);
+                for (let obj of e.posts) {
+                    if (obj.title.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+                        e.posts = e.posts.filter(f => f.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        data = [...data, e];
                         break;
                     }
                 }
             });
+            return data;
+        },
+        api: {
+            source: "https://newsapi.org/v2/top-headlines",
+            // key: "49f60504b97b4536908bec624481a25a",
+            // key: "41c532f36a75476dade761a4ada57bfd",
+            // key: "09554bc11b0b4e4cb4d22c519e42604b",
+            // key: "623686037cc046d9a78384bafee97a78",
+            // key: "612c24355bc24dbcbb4b13496d772971",
+            // key: "42d323055b9d49e6bab62f84d073699c",
+            // key: "8b869ec3eec745c99e0442c5abf60ccf",
+            key: "e6ef2cde327f46e3820d0344025b79fc",
+        },
+        categories: ['business','entertainment','general','health','science','sports','technology'],
+        countries: ['ae','ar','at','au','be','bg','br','ca','ch','cn','co','cu','cz','de','eg','fr','gb','gr','hk','hu','id','ie','il','in','it','jp','kr','lt','lv','ma','mx','my','ng','nl','no','nz','ph','pl','pt','ro','rs','ru','sa','se','sg','si','sk','th','tr','tw','ua','us','ve','za'],
 
-            return newData;
+    }, () => {
+        class Post {
+            constructor(title, description, urlToImage, publishedAt, author, url, category) {
+                Object.assign(this, { title, description, urlToImage, publishedAt, author, url, category })
+            }
+        }
+        class Group {
+            constructor(title, posts) {
+                Object.assign(this, { title, posts })
+            }
+        }
+        const url_string = window.location.href;
+        const url = new URL(url_string);
+        const country = url.searchParams.get('country') ?? 'us';
+
+        for (let i = 0; i < App.data.categories.length; i++) {
+            let posts = [];
+            const response = fetch(App.data.api.source + "?country=" + country + "&category=" + App.data.categories[i] + "&apiKey=" + App.data.api.key).then(response => {
+                response.json().then(e => {
+                    if (typeof(e.articles) === "object") {
+                        for (let a of e.articles) {
+                            posts.push(new Post(a.title, a.description, a.urlToImage ?? 'https://i.stack.imgur.com/y9DpT.jpg', a.publishedAt, a.author, a.url, App.data.categories[i]));
+                        }
+                    }
+                    App.data.groups = [...App.data.groups, new Group(App.data.categories[i], posts)];
+                });
+            });
         }
     });
 </script>
