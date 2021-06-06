@@ -51,34 +51,6 @@ function demount(domElement) {
     return newNode;
 }
 
-/**
- * ### This function make dom from nodes tree
- * @param node
- * @returns {HTMLElement}
- */
-// function mount(node) {
-//     const { tagName, props, children } = node;
-//
-//     const newElement = document.createElement(tagName);
-//
-//     for (const att in props) {
-//         newElement.setAttribute(att, props[att]);
-//     }
-//
-//     for (const child of children) {
-//         if (!child) {
-//             continue;
-//         }
-//         if (typeof child === "string") {
-//             newElement.innerText = child;
-//             continue;
-//         }
-//         newElement.appendChild( mount(child) );
-//     }
-//
-//     return newElement;
-// }
-
 class Dep {
     constructor() {
         this.subscribers = new Set();
@@ -126,6 +98,7 @@ function follow(delegate) {
 
 class Easy {
     constructor(data= {}) {
+
         // Get root dom element
         this.root = $$('#app');
 
@@ -146,6 +119,8 @@ class Easy {
         log('Created instance app with data:');
         log(this.data, 'table');
 
+        this.it = 0; ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         this.watch();
 
         follow(() => {
@@ -153,14 +128,15 @@ class Easy {
             this.watch();
         });
 
+
     }
     watch() {
-        log('Star watching dom\n{');
-        let clone = Object.assign({}, this.virtualDOM);
+        console.groupCollapsed('Watching');
 
+        let clone = Object.assign({}, this.virtualDOM);
         this.parser(clone)
 
-        log('}\nEnd watching');
+        console.groupEnd();
     }
     unmount(node) {
         this.virtualDOM.$ref.parentNode.removeChild(node.$ref);
@@ -227,95 +203,106 @@ class Easy {
     parser(node) {
         let { tagName, props, children } = node;
 
-        for (let child in children) {
-            let ch = children[child];
-            if (!ch) continue;
-            // Parse variables
-            if (typeof ch === "string") {
-                if (ch.indexOf('@->') === 0) {
-                    const prop = ch.replace('@->', '');
+        children.forEach(child => {
+            if (typeof child === "string") {
+                if (child.indexOf('@->') === 0) {
+                    const prop = child.replace('@->', '');
                     if (this.data.hasOwnProperty(prop)) {
-                        node.$ref.innerText = this.data[prop];
-                    }
-                }
-                continue;
-            }
-            // Inputs
-            if (ch.tagName === 'INPUT') {
-                if (ch.props.hasOwnProperty('bind')) {
-                    if (this.data.hasOwnProperty(ch.props.bind)) {
-                        ch.$ref.value = this.data[ch.props.bind];
-                    }
-                }
-            }
-
-            if (ch.tagName === 'FOR') {
-                console.log('----------------------------------------------------');
-                // console.log('Found tag for:')
-                if (ch.props.hasOwnProperty('in')) {
-                    // console.log(`has attribute in: ${ch.props.in}`);
-                    if (this.data.hasOwnProperty(ch.props.in)) {
-                        // console.group('Data has property:');
-                        // console.log(this.data[ch.props.in]);
-                        // console.groupEnd();
-                        ch.$ref.innerHTML = "";
-                        for (let c of ch.children) {
-                            ch.$ref.appendChild(
-                                this.mountReturn(c)
-                            )
+                        if (typeof this.data[prop] === 'function') {
+                            node.$ref.innerText = this.data[prop]();
                         }
-                        let template = ch.$ref.innerHTML;
-                        let generatedContent = '';
-                        for (let prop in this.data[ch.props.in]) {
-                            generatedContent += template;
+                        else {
+                            node.$ref.innerText = this.data[prop];
                         }
-                        ch.$ref.innerHTML = generatedContent;
-
-                        console.group('#FutureCyclesParser');
-
-                        this.futureCyclesParser(ch.$ref, ch.props.in);
-
-                        console.groupEnd();
-
-                        // ch.$ref.outerHTML = ch.$ref = ch.$ref.innerHTML;
                     }
                 }
-                continue;
+                return;
             }
-            this.parser(ch);
-        }
-    }
-    futureCyclesParser(cycleElement, parameter) {
-        for (let child of cycleElement.children) {
+            if (child.tagName === 'INPUT') {
+                if (child.props.hasOwnProperty('bind')) {
+                    if (this.data.hasOwnProperty(child.props.bind)) {
+                        child.$ref.value = this.data[child.props.bind];
+                    }
+                }
+            }
+
             if (child.tagName === 'FOR') {
+                if (child.props.hasOwnProperty('in')) {
+                    const pointer = child.props.in;
 
-                if (child.attributes.hasOwnProperty('in')) {
-                    if (this.data.hasOwnProperty(parameter)) {
-                        // console.log(this.data[parameter])
-                        let template = child.innerHTML;
+                    if (this.data.hasOwnProperty(pointer)) {
+                        child.$ref.innerHTML = '';
+
+                        child.children.forEach(c => {
+                            child.$ref.appendChild(this.mountReturn(c));
+                        });
+
+                        let template = child.$ref.innerHTML;
                         let generatedContent = '';
-                        for (let object in this.data[parameter]) {
-                            if (this.data[parameter][object].hasOwnProperty(child.getAttribute('in'))) {
-                                // console.log(`Attribute ${child.getAttribute('in')}`)
 
-                                let elementContent = template;
+                        this.data[pointer].forEach(obj => {
+                            generatedContent += template;
+                        })
 
-                                for (let prop in this.data[parameter][object][child.getAttribute('in')]) {
-                                    console.log(prop)
-                                    for (let pp in this.data[parameter][object][child.getAttribute('in')][prop]) {
-                                        elementContent = elementContent.replaceAll(`@-&gt;${pp}`, this.data[parameter][object][child.getAttribute('in')][prop][pp]);
-                                        elementContent = elementContent.replaceAll(`@->${pp}`, this.data[parameter][object][child.getAttribute('in')][prop][pp]);
-                                    }
-                                }
-                                generatedContent += elementContent;
-                            }
-                        }
-                        parameter = child.getAttribute('in');
-                        child.outerHTML = generatedContent; // Need fix outerHtml: now nested cycles works only 2 iteration need make inner html then outerHtml
+                        child.$ref.innerHTML = generatedContent;
+
+                        this.it = 0;
+                        this.cycleParse(child.$ref, pointer);
                     }
+
                 }
             }
-            this.futureCyclesParser(child, parameter);
+            this.parser(child)
+        });
+    }
+
+    cycleParse(cycleElement, parameter) {
+        for (let child of cycleElement.children) {
+            if (child.tagName !== 'FOR') {
+                console.log(child.innerText)
+
+                if (child.innerText.indexOf('@->') === 0) {
+                    const prop = child.innerText.replace('@->', '');
+                    if (this.data[parameter][this.it].hasOwnProperty(prop)) {
+                        child.innerText = this.data[parameter][this.it][prop];
+                        console.log(this.it)
+                    }
+                }
+
+                this.cycleParse(child, parameter);
+                continue;
+            }
+
+            if (!child.attributes.hasOwnProperty('in')) continue;
+
+            const pointer = child.getAttribute('in');
+
+            if (!this.data.hasOwnProperty(parameter)) continue;
+
+            this.data[parameter].forEach(obj => {
+
+                let template = child.innerHTML;
+                let generatedContent = '';
+
+                // one category
+
+                if (!obj.hasOwnProperty(pointer)) return;
+
+                for (let element in this.data[parameter][this.it][pointer]) {
+                    let text = template;
+                    for (let field in this.data[parameter][this.it][pointer][element]) {
+                        text = text.replaceAll(`@-&gt;${field}`, this.data[parameter][this.it][pointer][element][field]);
+                    }
+                    generatedContent += text;
+                }
+
+                child.outerHTML = generatedContent;
+
+            });
+
+            this.it++;
+
+            console.log(parameter);
         }
     }
 }
