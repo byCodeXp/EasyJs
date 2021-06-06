@@ -70,7 +70,7 @@ class Dep {
  * @param {*} data
  * @returns {*}
  */
-function $(data) {
+function $ (data) {
     Object.keys(data).forEach((key) => {
         const dep = new Dep();
         let value = data[key];
@@ -203,7 +203,7 @@ class Easy {
             if (typeof child === "string") {
                 if (child.indexOf('@->') === 0) {
                     const prop = child.replace('@->', '');
-                    if (this.data.hasOwnProperty(prop)) {
+                    if (prop in this.data) {
                         if (typeof this.data[prop] === 'function') {
                             node.$ref.innerText = this.data[prop]();
                         }
@@ -215,15 +215,15 @@ class Easy {
                 return;
             }
             if (child.tagName === 'INPUT')
-                if (child.props.hasOwnProperty('bind'))
-                    if (this.data.hasOwnProperty(child.props.bind))
+                if ('bind' in child.props)
+                    if (child.props.bind in this.data)
                         child.$ref.value = this.data[child.props.bind];
 
             if (child.tagName === 'FOR') {
-                if (child.props.hasOwnProperty('in')) {
+                if ('in' in child.props) {
                     const pointer = child.props.in;
 
-                    if (this.data.hasOwnProperty(pointer)) {
+                    if (pointer in this.data) {
                         child.$ref.innerHTML = '';
 
                         child.children.forEach(c => {
@@ -233,9 +233,17 @@ class Easy {
                         let template = child.$ref.innerHTML;
                         let generatedContent = '';
 
-                        this.data[pointer].forEach(obj => {
-                            generatedContent += template;
-                        })
+                        if (typeof this.data[pointer] === 'function') {
+                            this.data[pointer]().forEach(obj => {
+                                generatedContent += template;
+                            })
+                        }
+                        else
+                        {
+                            this.data[pointer].forEach(obj => {
+                                generatedContent += template;
+                            })
+                        }
 
                         child.$ref.innerHTML = generatedContent;
 
@@ -250,12 +258,22 @@ class Easy {
     }
 
     cycleParse(cycleElement, parameter) {
+        let data;
+
+        if (typeof this.data[parameter] === 'function') {
+            data = this.data[parameter]();
+        }
+        else {
+            data = this.data[parameter];
+        }
+
         for (let child of cycleElement.children) {
             if (child.tagName !== 'FOR') {
                 if (child.innerText.indexOf('@->') === 0) {
                     const prop = child.innerText.replace('@->', '');
-                    if (this.data[parameter][this.it].hasOwnProperty(prop)) {
-                        child.innerText = this.data[parameter][this.it][prop];
+
+                    if (prop in data[this.it]) {
+                        child.innerText = data[this.it][prop];
                     }
                 }
 
@@ -263,31 +281,30 @@ class Easy {
                 continue;
             }
 
-            if (!child.attributes.hasOwnProperty('in')) continue;
+            if (!'in' in child.attributes) continue;
 
             const pointer = child.getAttribute('in');
 
-            if (!this.data.hasOwnProperty(parameter)) continue;
+            if (!parameter in this.data) continue;
 
-            this.data[parameter].forEach(obj => {
+            data.forEach(obj => {
 
                 let template = child.innerHTML;
                 let generatedContent = '';
 
                 // one category
 
-                if (!obj.hasOwnProperty(pointer)) return;
+                if (!pointer in obj) return;
 
-                for (let element in this.data[parameter][this.it][pointer]) {
+                for (let element in data[this.it][pointer]) {
                     let text = template;
-                    for (let field in this.data[parameter][this.it][pointer][element]) {
-                        text = text.replaceAll(`@-&gt;${field}`, this.data[parameter][this.it][pointer][element][field]);
+                    for (let field in data[this.it][pointer][element]) {
+                        text = text.replaceAll(`@-&gt;${field}`, data[this.it][pointer][element][field]);
                     }
                     generatedContent += text;
                 }
                 child.outerHTML = generatedContent;
             });
-
             this.it++;
         }
     }
@@ -296,7 +313,7 @@ class Easy {
 document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keyup', function() {
         const e = event.target;
-        if (e.attributes.hasOwnProperty('bind')) {
+        if ('bind' in e.attributes) {
             App.data[e.attributes.bind.value] = e.value;
         }
     });

@@ -29,9 +29,7 @@
                     @->title
                 </a>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ms-5">
-                    <for in="foods">
-                        <li><a href="#@->category" class="nav-link px-2 text-secondary">@->category</a></li>
-                    </for>
+                    <li><a href="#@->category" class="nav-link px-2 text-secondary">@->category</a></li>
                 </ul>
                 <div class="text-end">
                     <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
@@ -111,52 +109,68 @@
                 time: "9 mins"
             }
         ],
-        foods: [
-            {
-                category: "fruits",
-                list: [
-                    {
-                        name: "🍊 Orange",
-                        price: '$6',
-                        preview: 'https://www.abc.net.au/news/image/10032956-3x2-940x627.jpg'
+        foods: function () {
+            const data = [
+                {
+                    category: "fruits",
+                    list: [
+                        {
+                            name: "🍊 Orange",
+                            price: '$6',
+                            preview: 'https://www.abc.net.au/news/image/10032956-3x2-940x627.jpg'
+                        }
+                    ]
+                },
+                {
+                    category: "drinks",
+                    list: [
+                        {
+                            name: "🍵 Tea",
+                            price: '$10',
+                            preview: 'https://ipolitics.ca/wp-content/uploads/2021/04/tea-scaled.jpg'
+                        },
+                        {
+                            name: "☕ Coffee",
+                            price: '$20',
+                            preview: ''
+                        },
+                        {
+                            name: "🍹 Tropical drink",
+                            price: '$32',
+                            preview: ''
+                        }
+                    ]
+                },
+                {
+                    category: "fast foods",
+                    list: [
+                        {
+                            name: "🍕 Pizza",
+                            price: '$22'
+                        },
+                        {
+                            name: "🍟 Fries",
+                            price: '$15',
+                            preview: 'https://static.toiimg.com/thumb/54659021.cms?width=1200&height=900'
+                        },
+                    ]
+                },
+            ];
+
+            let newData = [];
+
+            data.forEach(e => {
+                for (let obj of e.list) {
+                    if (obj.name.toLowerCase().includes(this.searchQuery.toLowerCase())) {
+                        e.list = e.list.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        newData = [...newData, e];
+                        break;
                     }
-                ]
-            },
-            {
-                category: "drinks",
-                list: [
-                    {
-                        name: "🍵 Tea",
-                        price: '$10',
-                        preview: 'https://ipolitics.ca/wp-content/uploads/2021/04/tea-scaled.jpg'
-                    },
-                    {
-                        name: "☕ Coffee",
-                        price: '$20',
-                        preview: ''
-                    },
-                    {
-                        name: "🍹 Tropical drink",
-                        price: '$32',
-                        preview: ''
-                    }
-                ]
-            },
-            {
-                category: "fast foods",
-                list: [
-                    {
-                        name: "🍕 Pizza",
-                        price: '$22'
-                    },
-                    {
-                        name: "🍟 Fries",
-                        price: '$15',
-                        preview: 'https://static.toiimg.com/thumb/54659021.cms?width=1200&height=900'
-                    },
-                ]
-            },
-        ]
+                }
+            });
+
+            return newData;
+        }
     });
 </script>
 </body>
