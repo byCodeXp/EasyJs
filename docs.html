@@ -29,11 +29,9 @@
                     @->title
                 </a>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 ms-5">
-                    <li><a href="#" class="nav-link px-2 text-secondary">Home</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">Features</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">Pricing</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
-                    <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+                    <for in="foods">
+                        <li><a href="#@->category" class="nav-link px-2 text-secondary">@->category</a></li>
+                    </for>
                 </ul>
                 <div class="text-end">
                     <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
@@ -58,27 +56,28 @@
         </section>
         <div class="album py-5 bg-light">
             <div class="container">
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-
-                    <for in="set">
-                        <div class="col">
-                            <div class="card shadow-sm overflow-hidden">
-                                <img src="https://codyhouse.co/demo/squeezebox-portfolio-template/img/img.png" alt="">
-                                <div class="card-body">
-                                    <p class="card-text">@->title</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                <for in="foods">
+                    <h2 id="@->category" class="mt-4">@->category</h2>
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                        <for in="list">
+                            <div class="col">
+                                <div class="card shadow-sm overflow-hidden">
+                                    <img src="@->preview" alt="">
+                                    <div class="card-body">
+                                        <p class="card-text">@->name</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                            </div>
+                                            <small class="text-muted">@->price</small>
                                         </div>
-                                        <small class="text-muted">@->time</small>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </for>
-
-                </div>
+                        </for>
+                    </div>
+                </for>
             </div>
         </div>
     </main>
@@ -95,7 +94,7 @@
 <script src="js/core.js" charset="UTF-8"></script>
 <script>
     const App = new Easy({
-        title: "Hello World!",
+        title: "EasyJs",
         searchQuery: "blah blah",
         array: ['article', 'post', 'block'],
         set: [
@@ -111,6 +110,67 @@
                 title: "Banana",
                 time: "9 mins"
             }
+        ],
+        foods: [
+            {
+                category: "fruits",
+                list: [
+                    {
+                        name: "🍊 Orange",
+                        price: '$6',
+                        preview: 'https://www.abc.net.au/news/image/10032956-3x2-940x627.jpg'
+                    },
+                    {
+                        name: "🍎 Apple",
+                        price: '$3',
+                        preview: ''
+                    },
+                    {
+                        name: "🍉 Watermelon",
+                        price: '$11',
+                        preview: ''
+                    }
+                ]
+            },
+            {
+                category: "drinks",
+                list: [
+                    {
+                        name: "🍵 Tea",
+                        price: '$10',
+                        preview: 'https://ipolitics.ca/wp-content/uploads/2021/04/tea-scaled.jpg'
+                    },
+                    {
+                        name: "☕ Coffee",
+                        price: '$20',
+                        preview: ''
+                    },
+                    {
+                        name: "🍹 Tropical drink",
+                        price: '$32',
+                        preview: ''
+                    }
+                ]
+            },
+            {
+                category: "fast foods",
+                list: [
+                    {
+                        name: "🍕 Pizza",
+                        price: '$22'
+                    },
+                    {
+                        name: "🍟 Fries",
+                        price: '$15',
+                        preview: 'https://static.toiimg.com/thumb/54659021.cms?width=1200&height=900'
+                    },
+                    {
+                        name: "🍔 Hamburger",
+                        price: '$12',
+                        preview: ''
+                    }
+                ]
+            },
         ]
     });
 </script>
