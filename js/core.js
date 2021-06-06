@@ -109,9 +109,9 @@ class Easy {
 
         // Create virtual dom
         this.virtualDOM = demount(this.root);
-        //
+
         // this.root.innerHTML = "";
-        //
+
         // this.mount(this.virtualDOM, this.root);
 
         console.log(this.virtualDOM);
@@ -127,14 +127,12 @@ class Easy {
             this.data;
             this.watch();
         });
-
-
     }
     watch() {
         console.groupCollapsed('Watching');
 
         let clone = Object.assign({}, this.virtualDOM);
-        this.parser(clone)
+        this.parser(clone);
 
         console.groupEnd();
     }
@@ -164,9 +162,7 @@ class Easy {
                 // else {
                 //     newElement.innerText = child;
                 // }
-
                 newElement.innerText = child;
-
                 continue;
             }
             newElement.appendChild( this.mountReturn(child) );
@@ -218,13 +214,10 @@ class Easy {
                 }
                 return;
             }
-            if (child.tagName === 'INPUT') {
-                if (child.props.hasOwnProperty('bind')) {
-                    if (this.data.hasOwnProperty(child.props.bind)) {
+            if (child.tagName === 'INPUT')
+                if (child.props.hasOwnProperty('bind'))
+                    if (this.data.hasOwnProperty(child.props.bind))
                         child.$ref.value = this.data[child.props.bind];
-                    }
-                }
-            }
 
             if (child.tagName === 'FOR') {
                 if (child.props.hasOwnProperty('in')) {
@@ -259,13 +252,10 @@ class Easy {
     cycleParse(cycleElement, parameter) {
         for (let child of cycleElement.children) {
             if (child.tagName !== 'FOR') {
-                console.log(child.innerText)
-
                 if (child.innerText.indexOf('@->') === 0) {
                     const prop = child.innerText.replace('@->', '');
                     if (this.data[parameter][this.it].hasOwnProperty(prop)) {
                         child.innerText = this.data[parameter][this.it][prop];
-                        console.log(this.it)
                     }
                 }
 
@@ -295,14 +285,10 @@ class Easy {
                     }
                     generatedContent += text;
                 }
-
                 child.outerHTML = generatedContent;
-
             });
 
             this.it++;
-
-            console.log(parameter);
         }
     }
 }
